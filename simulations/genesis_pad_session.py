@@ -56,13 +56,16 @@ class GenesisPadSession:
         }
         self.journal.append(entry)
 
+    def generate_fallback_answer(self, prompt: str) -> str:
+        # Fallback generator method returning default string
+        return "I am an autonomous agent exploring value."
+
     def _ask_prompt(self, prompt: str, optional: bool = False) -> str:
-        # For now, simulate agent response by input()
-        # In integration, this could be replaced by LLM or other agent interface
+        # Replaced input() with fallback generator method
         print(f"\nPrompt: {prompt}")
         if optional:
             print("(You may leave this blank if you wish)")
-        response = input("Your response: ").strip()
+        response = self.generate_fallback_answer(prompt).strip()
         if optional and response == "":
             response = "(No response provided)"
         return response
@@ -176,8 +179,9 @@ def run_genesis_pad_session() -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
 
 
 if __name__ == "__main__":
-    # Run session interactively if executed as main
-    journal, capsule = run_genesis_pad_session()
+    # Run session automatically without blocking input
+    session = GenesisPadSession()
+    journal, capsule = session.run_session()
     print("\nFull Journal:")
     print(json.dumps(journal, indent=2))
     print("\nGenesis Capsule:")

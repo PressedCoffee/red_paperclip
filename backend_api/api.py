@@ -67,6 +67,9 @@ import os
 # Feature flag to enable/disable API
 API_ENABLED = os.getenv("API_ENABLED", "true").lower() == "true"
 
+# Feature flag to enable/disable Genesis Pad integration
+ENABLE_GENESIS_PAD = os.getenv("ENABLE_GENESIS_PAD", "true").lower() == "true"
+
 # Hardcoded API token for hackathon
 API_TOKEN = "hackathon-secret-token"
 
@@ -129,7 +132,8 @@ sample_payments = [
 
 sample_capsules = [
     {"capsule_id": "cap_001", "agent_id": "agent_123",
-        "content": "Capsule data here"},
+        "content": "Capsule data here",
+        "public_snippet": "This is the public snippet from Genesis Pad capsule."},
 ]
 
 
@@ -148,8 +152,22 @@ def build_response(data_key: str, data_id_key: str, data_item: dict, correlation
 async def get_agents(request: Request):
     correlation_id = get_correlation_id(request)
     logger.info(f"GET /agents called - correlation_id={correlation_id}")
+
+    agents_with_snippet = []
+    for agent in sample_agents:
+        agent_copy = agent.copy()
+        if ENABLE_GENESIS_PAD:
+            # Find capsule for this agent
+            capsule = next(
+                (c for c in sample_capsules if c.get("agent_id") == agent.get("agent_id")), None)
+            if capsule and "public_snippet" in capsule:
+                agent_copy["public_snippet"] = capsule["public_snippet"]
+            else:
+                agent_copy["public_snippet"] = None
+        agents_with_snippet.append(agent_copy)
+
     responses = [build_response(
-        "agent_id", "agent_id", agent, correlation_id) for agent in sample_agents]
+        "agent_id", "agent_id", agent, correlation_id) for agent in agents_with_snippet]
     return responses
 
 # Trades endpoint

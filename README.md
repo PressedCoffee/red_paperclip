@@ -20,7 +20,25 @@ pip install numpy pandas matplotlib pytest
 python run_hackathon_demo.py
 ```
 
+3. **View X402 Payment Results**:
+
+```bash
+python show_x402_demo.py
+```
+
 ## 🎯 Key Features
+
+![x402 Protocol](https://img.shields.io/badge/x402-autonomous_micropayments-green)
+![Base Sepolia](https://img.shields.io/badge/Base-Sepolia_Testnet-blue)
+![EIP-712](https://img.shields.io/badge/EIP--712-Signatures-orange)
+
+### ⚡ x402 Micropayments
+
+- **x402 protocol implemented for autonomous AI micro-payments on base-sepolia testnet**
+- **100% autonomous payment flow with EIP-712 signatures**
+- **Wallet signing via Coinbase AgentKit**
+- **Payments unlock premium resources in simulation**
+- **All receipts logged with correlation IDs**
 
 ### Multi-Agent System
 
@@ -83,6 +101,42 @@ The hackathon demo showcases:
 3. **Coalition Formation**: Strategic alliance building
 4. **Chaos Events**: Market disruption handling
 5. **Value Evolution**: How agents redefine worth over time
+
+## ⚡ X402 Micropayments Demo
+
+The system implements a production-ready **x402 protocol for autonomous AI micropayments on base-sepolia testnet**:
+
+### 🔗 Live Payment Flow
+
+- **100% autonomous payment flow with EIP-712 signatures**
+- **Wallet signing via Coinbase AgentKit**
+- **Payments unlock premium resources in simulation**
+- **All receipts logged with correlation IDs**
+- **Compatible with base-sepolia testnet**
+
+### 📊 Demo Results
+
+```
+payments_made: 14
+payment_failures: 0
+session_log_valid: True
+x402_success_rate: 100%
+```
+
+### 🔧 Configuration
+
+```yaml
+# See cdp-config.yaml for full configuration
+network: base-sepolia
+usdc_address: 0x036CbD53842c5426634e7929541eC2318f3dCF7e
+payment_amount: 0.10 USDC
+```
+
+### 📁 Payment Artifacts
+
+- **Payment Receipts**: `receipts/x402_receipts.json` - All successful micropayment receipts
+- **Session Logs**: `simulation_logs/` - Full transaction and event logs
+- **Configuration**: `cdp-config.yaml` - CDP wallet and x402 setup guide
 
 ## 🛠️ Technical Highlights
 

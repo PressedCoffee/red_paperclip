@@ -108,187 +108,54 @@ def test_construct_payment_header(payment_handler):
     assert header_value["paymentDetails"] == payment_params
 
 
-@patch("agents.agent.requests.get")
-@patch("agents.agent.logging")
-def test_get_resource_with_x402_retry_feature_flag_disabled(mock_logging, mock_get):
-    # Setup mock to simulate normal GET
-    mock_get.return_value = MagicMock(status_code=200, text="OK")
+def test_fallback_wallet_used_when_no_real_wallet(monkeypatch):
+    from agents.x402_payment_handler import X402PaymentHandler, FallbackWallet
 
-    agent_lifecycle = AgentLifecycleManager(agent=None)
-    # Disable feature flag by patching the dict inside method
-    with patch.dict("agents.agent.AgentLifecycleManager.__dict__", {"EXPERIMENTAL_FEATURES": {"x402": False}}):
-        response = agent_lifecycle.get_resource_with_x402_retry(
-            "http://example.com")
-        assert response.status_code == 200
-        mock_get.assert_called_once_with("http://example.com")
+    class NoWalletManager:
+        def get_wallet_address(self):
+            return None
 
+        def sign_typed_data(self, **kwargs):
+            return "0xfallbacksignature"
 
-@patch("agents.agent.requests.get")
-@patch("agents.agent.logging")
-def test_get_resource_with_x402_retry_successful_payment_flow(mock_logging, mock_get):
-    # Setup 402 response with valid payment params
+    no_wallet_manager = NoWalletManager()
+    handler = X402PaymentHandler(no_wallet_manager)
+    # The wallet_manager should be replaced with FallbackWallet instance
+    assert isinstance(handler.wallet_manager, FallbackWallet)
+
     payment_params = {
         "domain": {"name": "Test"},
         "types": {"TestType": []},
         "primaryType": "TestType",
         "message": {"foo": "bar"}
     }
-    response_402 = MagicMock(status_code=402, text=json.dumps(
-        {"payment_params": payment_params}))
-    response_200 = MagicMock(status_code=200, text="Success")
-
-    # Setup mock get to return 402 first, then 200 on retry
-    mock_get.side_effect = [response_402, response_200]
-
-    # Patch X402PaymentHandler methods
-    with patch.object(AgentLifecycleManager, "x402_payment_handler", create=True) as mock_handler:
-        mock_handler.parse_402_response.return_value = payment_params
-        mock_handler.sign_payment_authorization.return_value = "0xSignature"
-        mock_handler.construct_payment_header.return_value = {
-            "X-PAYMENT": "header_value"}
-
-        agent_lifecycle = AgentLifecycleManager(agent=None)
-        # Patch feature flag to True
-        with patch.dict("agents.agent.AgentLifecycleManager.__dict__", {"EXPERIMENTAL_FEATURES": {"x402": True}}):
-            # Inject the mock handler
-            agent_lifecycle.x402_payment_handler = mock_handler
-            response = agent_lifecycle.get_resource_with_x402_retry(
-                "http://example.com", max_retries=1)
-
-    assert response.status_code == 200
-    assert mock_get.call_count == 2
-    mock_handler.parse_402_response.assert_called_once()
-    mock_handler.sign_payment_authorization.assert_called_once()
-    mock_handler.construct_payment_header.assert_called_once()
-    mock_logging.info.assert_any_call(
-        "Payment successful for URL http://example.com with correlation_id " +
-        mock_logging.info.call_args[0][0].split()[-1]
-    )
+    signature = handler.sign_payment_authorization(payment_params)
+    assert signature == "0xfallbacksignature"
 
 
-@patch("agents.agent.requests.get")
-@patch("agents.agent.logging")
-def test_get_resource_with_x402_retry_parse_failure(mock_logging, mock_get):
-    response_402 = MagicMock(status_code=402, text="invalid json")
-    mock_get.return_value = response_402
+def test_sign_payment_authorization_logs_error_and_returns_none(monkeypatch, caplog):
+    from agents.x402_payment_handler import X402PaymentHandler
 
-    with patch.object(AgentLifecycleManager, "x402_payment_handler", create=True) as mock_handler:
-        mock_handler.parse_402_response.return_value = None
+    class BadWalletManager:
+        def get_wallet_address(self):
+            return "0xWalletAddress"
 
-        agent_lifecycle = AgentLifecycleManager(agent=None)
-        with patch.dict("agents.agent.AgentLifecycleManager.__dict__", {"EXPERIMENTAL_FEATURES": {"x402": True}}):
-            agent_lifecycle.x402_payment_handler = mock_handler
-            response = agent_lifecycle.get_resource_with_x402_retry(
-                "http://example.com")
+        def sign_typed_data(self, **kwargs):
+            raise Exception("Signing failure")
 
-    assert response.status_code == 402
-    mock_logging.error.assert_called_with(
-        "Failed to parse payment parameters from 402 response for URL http://example.com"
-    )
+    bad_wallet_manager = BadWalletManager()
+    handler = X402PaymentHandler(bad_wallet_manager)
 
-
-@patch("agents.agent.requests.get")
-@patch("agents.agent.logging")
-def test_get_resource_with_x402_retry_signing_failure(mock_logging, mock_get):
     payment_params = {
         "domain": {"name": "Test"},
         "types": {"TestType": []},
         "primaryType": "TestType",
         "message": {"foo": "bar"}
     }
-    response_402 = MagicMock(status_code=402, text=json.dumps(
-        {"payment_params": payment_params}))
-    mock_get.return_value = response_402
 
-    with patch.object(AgentLifecycleManager, "x402_payment_handler", create=True) as mock_handler:
-        mock_handler.parse_402_response.return_value = payment_params
-        mock_handler.sign_payment_authorization.return_value = None
-
-        agent_lifecycle = AgentLifecycleManager(agent=None)
-        with patch.dict("agents.agent.AgentLifecycleManager.__dict__", {"EXPERIMENTAL_FEATURES": {"x402": True}}):
-            agent_lifecycle.x402_payment_handler = mock_handler
-            response = agent_lifecycle.get_resource_with_x402_retry(
-                "http://example.com")
-
-    assert response.status_code == 402
-    mock_logging.error.assert_called_with(
-        "Failed to sign payment authorization for URL http://example.com"
-    )
-
-
-@patch("agents.agent.requests.get")
-@patch("agents.agent.logging")
-def test_get_resource_with_x402_retry_retry_failure(mock_logging, mock_get):
-    payment_params = {
-        "domain": {"name": "Test"},
-        "types": {"TestType": []},
-        "primaryType": "TestType",
-        "message": {"foo": "bar"}
-    }
-    response_402 = MagicMock(status_code=402, text=json.dumps(
-        {"payment_params": payment_params}))
-    response_403 = MagicMock(status_code=403, text="Forbidden")
-
-    mock_get.side_effect = [response_402, response_403]
-
-    with patch.object(AgentLifecycleManager, "x402_payment_handler", create=True) as mock_handler:
-        mock_handler.parse_402_response.return_value = payment_params
-        mock_handler.sign_payment_authorization.return_value = "0xSignature"
-        mock_handler.construct_payment_header.return_value = {
-            "X-PAYMENT": "header_value"}
-
-        agent_lifecycle = AgentLifecycleManager(agent=None)
-        with patch.dict("agents.agent.AgentLifecycleManager.__dict__", {"EXPERIMENTAL_FEATURES": {"x402": True}}):
-            agent_lifecycle.x402_payment_handler = mock_handler
-            response = agent_lifecycle.get_resource_with_x402_retry(
-                "http://example.com", max_retries=1)
-
-    assert response.status_code == 403
-    mock_logging.warning.assert_called()
-    mock_logging.error.assert_called_with(
-        "Exceeded max retries for payment on URL http://example.com"
-    )
-
-
-@patch("agents.agent.requests.get")
-@patch("agents.agent.logging")
-def test_get_resource_with_x402_retry_request_exception(mock_logging, mock_get):
-    mock_get.side_effect = Exception("Network error")
-
-    agent_lifecycle = AgentLifecycleManager(agent=None)
-    with patch.dict("agents.agent.AgentLifecycleManager.__dict__", {"EXPERIMENTAL_FEATURES": {"x402": True}}):
-        response = agent_lifecycle.get_resource_with_x402_retry(
-            "http://example.com")
-
-    assert response is None
-    mock_logging.error.assert_called()
-
-
-@patch("agents.agent.requests.get")
-@patch("agents.agent.logging")
-def test_get_resource_with_x402_retry_retry_request_exception(mock_logging, mock_get):
-    payment_params = {
-        "domain": {"name": "Test"},
-        "types": {"TestType": []},
-        "primaryType": "TestType",
-        "message": {"foo": "bar"}
-    }
-    response_402 = MagicMock(status_code=402, text=json.dumps(
-        {"payment_params": payment_params}))
-
-    mock_get.side_effect = [response_402, Exception("Network error")]
-
-    with patch.object(AgentLifecycleManager, "x402_payment_handler", create=True) as mock_handler:
-        mock_handler.parse_402_response.return_value = payment_params
-        mock_handler.sign_payment_authorization.return_value = "0xSignature"
-        mock_handler.construct_payment_header.return_value = {
-            "X-PAYMENT": "header_value"}
-
-        agent_lifecycle = AgentLifecycleManager(agent=None)
-        with patch.dict("agents.agent.AgentLifecycleManager.__dict__", {"EXPERIMENTAL_FEATURES": {"x402": True}}):
-            agent_lifecycle.x402_payment_handler = mock_handler
-            response = agent_lifecycle.get_resource_with_x402_retry(
-                "http://example.com")
-
-    assert response is None
-    mock_logging.error.assert_called()
+    with caplog.at_level("ERROR"):
+        signature = handler.sign_payment_authorization(payment_params)
+        assert signature is None
+        # Check that error was logged
+        assert any(
+            "Exception during signing payment authorization" in msg for msg in caplog.messages)

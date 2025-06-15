@@ -68,12 +68,12 @@ class AgentKitConfig:
         self.wallet_provider = wallet_provider
 
 
-class CdpWalletProvider:
+class CdpEvmServerWalletProvider:
     def __init__(self, config):
         self.config = config
 
 
-class CdpWalletProviderConfig:
+class CdpEvmServerWalletProviderConfig:
     def __init__(self, network):
         self.network = network
 

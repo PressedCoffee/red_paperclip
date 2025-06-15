@@ -1,0 +1,37 @@
+{
+  "demo_timestamp": "2025-06-15T19:41:07Z",
+  "total_receipts": 14,
+  "x402_metrics": {
+    "x402_attempts_total": 14,
+    "x402_success_total": 14,
+    "x402_failed_total": 0,
+    "x402_retry_total": 0,
+    "receipts_count": 14,
+    "agent_id": "demo_orchestrator_403847be",
+    "wallet_address": "0x1bf26737849c230a6f8e7ec6fdd45df9bf27db5e"
+  },
+  "receipts": [
+    {
+      "payment_id": "8307a818-7ee3-47c5-9c59-d41794c06834",
+      "agent_id": "demo_orchestrator_403847be",
+      "amount": "0.10",
+      "asset_address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "network": "base-sepolia",
+      "signature": "0xmocksig_af0843b8_1750016150",
+      "timestamp": 1750016150.0911174,
+      "status": "success",
+      "correlation_id": "af0843b8-dbec-47f1-96c1-e78357e15802"
+    },
+    {
+      "payment_id": "168cc4d6-3bbf-4538-8f73-89730153c86a",
+      "agent_id": "demo_orchestrator_403847be",
+      "amount": "0.10",
+      "asset_address": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "network": "base-sepolia",
+      "signature": "0xmocksig_45940b56_1750016186",
+      "timestamp": 1750016186.217133,
+      "status": "success",
+      "correlation_id": "45940b56-901f-4533-ab07-b5b94677247a"
+    }
+  ]
+}

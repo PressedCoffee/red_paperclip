@@ -1,0 +1,38 @@
+# Coinbase Developer Platform (CDP) Configuration
+# Used for wallet signing and x402 micropayments
+
+# API Configuration
+api:
+  key_id: "your-cdp-api-key-id-here"
+  key_secret: "your-cdp-api-key-secret-here"
+
+# Wallet Configuration
+wallet:
+  secret: "your-cdp-wallet-secret-here"
+  network: "base-sepolia" # testnet for development
+
+# X402 Payment Settings
+x402:
+  default_asset: "USDC"
+  usdc_address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e" # base-sepolia USDC
+  payment_amount: "0.10"
+  max_retries: 3
+  balance_threshold: "1.0"
+
+# Server Configuration
+server:
+  x402_endpoint: "http://localhost:8000"
+  premium_resource_path: "/api/premium-data"
+
+# Observability
+logging:
+  level: "INFO"
+  enable_metrics: true
+  receipt_logging: true
+# Environment Variable Mapping:
+# CDP_API_KEY_ID       -> api.key_id
+# CDP_API_KEY_SECRET   -> api.key_secret
+# CDP_WALLET_SECRET    -> wallet.secret
+# X402_NETWORK         -> wallet.network
+# X402_USDC_ADDRESS    -> x402.usdc_address
+# X402_SERVER_URL      -> server.x402_endpoint

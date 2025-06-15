@@ -3,17 +3,18 @@ from registry.capsule_registry import CapsuleRegistry
 import os
 
 try:
-    from coinbase_agentkit import AgentKit, AgentKitConfig, CdpWalletProvider, CdpWalletProviderConfig
+    from coinbase_agentkit import AgentKit, AgentKitConfig, CdpEvmServerWalletProvider, CdpEvmServerWalletProviderConfig
     print("✅ Successfully imported coinbase_agentkit modules")
+    COINBASE_AVAILABLE = True
 except ImportError:
     print("⚠️ Warning: coinbase_agentkit not found. Using mock implementations.")
+    COINBASE_AVAILABLE = False    # Fallback mocks for local dev or CI
 
-    # Fallback mocks for local dev or CI
-    class CdpWalletProviderConfig:
+    class CdpEvmServerWalletProviderConfig:
         def __init__(self, **kwargs):
             self.config = kwargs
 
-    class CdpWalletProvider:
+    class CdpEvmServerWalletProvider:
         def __init__(self, config):
             self.config = config
 
@@ -34,7 +35,7 @@ except ImportError:
                 seed = f"{network}_{time.time()}_{hash(str(kwargs))}"
                 return "0x" + hashlib.md5(seed.encode()).hexdigest()[:40]
 
-BASE_SEPOLIA_NETWORK = "sepolia"
+BASE_SEPOLIA_NETWORK = "base-sepolia"
 
 
 class WalletManager:
@@ -46,15 +47,15 @@ class WalletManager:
         self._wallet_address: Optional[str] = None
         self._capsule_registry = capsule_registry
 
-        api_key_id = os.getenv("CDP_API_KEY_NAME")
-        api_key_private = os.getenv("CDP_API_KEY_PRIVATE")
+        api_key_id = os.getenv("CDP_API_KEY_ID")
+        api_key_secret = os.getenv("CDP_API_KEY_SECRET")
 
-        provider_config = CdpWalletProviderConfig(
+        provider_config = CdpEvmServerWalletProviderConfig(
             api_key_id=api_key_id,
-            api_key_private=api_key_private,
+            api_key_private=api_key_secret,
             network_id=BASE_SEPOLIA_NETWORK
         )
-        self._wallet_provider = CdpWalletProvider(provider_config)
+        self._wallet_provider = CdpEvmServerWalletProvider(provider_config)
         self._agentkit = AgentKit(AgentKitConfig(
             wallet_provider=self._wallet_provider))
 
