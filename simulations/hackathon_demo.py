@@ -13,7 +13,7 @@ from agents.nft.pinata_nft_storage import PinataNFTStorage
 from agents.x402_payment_handler import X402PaymentHandler
 from simulations.coalition_formation import CoalitionFormation
 from simulations.multi_agent_interaction import AutonomousAgent, create_agents
-from world_dynamics import inject_chaotic_event
+from chaos_pack.world_dynamics import inject_chaotic_event
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("HackathonDemo")

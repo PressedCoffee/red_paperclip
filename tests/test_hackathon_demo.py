@@ -2,7 +2,7 @@ import unittest
 import os
 import json
 from simulations.hackathon_demo import DemoScenarioOrchestrator
-from world_dynamics import inject_chaotic_event
+from chaos_pack.world_dynamics import inject_chaotic_event
 
 
 class TestHackathonDemoOrchestrator(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 import time
-from anonymous_broadcast_hall import AnonymousBroadcastHall, DreamInterpretationBehavior, PostingFrequencyLimitExceeded, EXPERIMENTAL_FEATURES
+from chaos_pack.anonymous_broadcast_hall import AnonymousBroadcastHall, DreamInterpretationBehavior, PostingFrequencyLimitExceeded, EXPERIMENTAL_FEATURES
 
 
 class TestAnonymousBroadcastHall(unittest.TestCase):

@@ -20,10 +20,6 @@ class TestCapsuleUGTT(unittest.TestCase):
         payoffs = [[3, 2], [1, 4]]
         matrix = self.ugtt.construct_payoff_matrix(strategies, payoffs)
 
-        # Debug prints to understand the assertion issue
-        print("Expected:", np.array(payoffs))
-        print("Got:", matrix)
-
         self.assertTrue(np.array_equal(matrix, np.array(payoffs)))
 
     def test_evaluate_strategy(self):

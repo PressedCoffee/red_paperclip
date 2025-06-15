@@ -2,7 +2,7 @@ import unittest
 import logging
 from unittest.mock import patch
 
-import world_dynamics as wd
+import chaos_pack.world_dynamics as wd
 
 
 class TestBlackSwanEngine(unittest.TestCase):
