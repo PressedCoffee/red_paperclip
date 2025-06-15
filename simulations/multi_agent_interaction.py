@@ -81,6 +81,10 @@ try:
     from simulations.coalition_formation import CoalitionFormation
     print("Successfully imported local project modules")
     from memory.agent_memory import AgentMemory
+
+    # Import GenesisPadSession for integration
+    from simulations.genesis_pad_session import GenesisPadSession
+
 except ImportError as e:
     if "pinecone" in str(e):
         print("Warning: pinecone module not found. Using mock implementations for local modules.")
@@ -134,6 +138,9 @@ TRADE_PROPOSAL_PROBABILITY = 0.3  # Probability an agent proposes a trade in a s
 COALITION_PROPOSAL_PROBABILITY = 0.15
 # Probability an agent attempts self-modification in a step
 SELF_MODIFICATION_PROBABILITY = 0.1
+
+# Feature flag to enable Genesis Pad integration
+ENABLE_GENESIS_PAD = True
 
 # Adjust number of agents for easier verification
 NUM_AGENTS = 3
@@ -311,6 +318,42 @@ def create_agents(num_agents: int) -> List[AutonomousAgent]:
         goal = f"Goal for {agent_id}"
         tags = [f"tag_{i+1}", "autonomous", "simulation"]
         agent = AutonomousAgent(agent_id, goal, tags)
+
+        # Integrate Genesis Pad session if enabled and capsule not already created
+        if ENABLE_GENESIS_PAD:
+            # Check if capsule already exists to avoid duplicates
+            existing_capsules = getattr(
+                agent.capsule_registry, "capsules", None)
+            capsule_exists = False
+            if existing_capsules:
+                for c in existing_capsules:
+                    if isinstance(c, dict) and c.get("agent_id") == agent.agent_id:
+                        capsule_exists = True
+                        break
+
+            if not capsule_exists:                # Run Genesis Pad session automatically without prompts
+                session = GenesisPadSession()
+                journal, genesis_capsule = session.run_session()
+                # Add agent_id to the genesis_capsule for create_capsule
+                genesis_capsule["agent_id"] = agent.agent_id
+                # Store the generated capsule in the agent's capsule registry
+                agent.capsule_registry.create_capsule(genesis_capsule)
+                # Log the Genesis Pad session output with timestamp
+                timestamp = datetime.utcnow().isoformat() + "Z"
+                log_entry = {
+                    "timestamp": timestamp,
+                    "agent_id": agent.agent_id,
+                    "action": "genesis_pad_session",
+                    "journal": journal,
+                    "genesis_capsule": genesis_capsule,
+                }
+                # Use existing log_action function to log
+                try:
+                    log_action(agent.agent_id, 0, log_entry)
+                except Exception as e:
+                    print(
+                        f"Error logging Genesis Pad session for {agent.agent_id}: {e}")
+
         agents.append(agent)
     return agents
 
@@ -324,6 +367,20 @@ def run_simulation():
     for step in range(1, SIMULATION_STEPS + 1):
         # Run each agent's step
         for agent in agents:
+            # Optionally update symbolic tags and goals during trade loop steps based on capsule data
+            if ENABLE_GENESIS_PAD:
+                if hasattr(agent.capsule_registry, "capsules"):
+                    for c in agent.capsule_registry.capsules:
+                        if isinstance(c, dict) and c.get("agent_id") == agent.agent_id:
+                            # Update agent's goal and tags from capsule if present
+                            new_goal = c.get("goal")
+                            new_tags = c.get("tags")
+                            if new_goal:
+                                agent.goal = new_goal
+                            if new_tags and isinstance(new_tags, list):
+                                agent.tags = new_tags
+                            break
+
             agent.run_step(step)
 
         # Randomly propose coalitions between agents
@@ -334,6 +391,41 @@ def run_simulation():
                     [a.agent_id for a in agents if a.agent_id != agent.agent_id],
                     k=min(2, len(agents) - 1)
                 )
+                # If Genesis Pad enabled, filter candidate agents based on capsule compatibility
+                if ENABLE_GENESIS_PAD:
+                    filtered_candidates = []
+                    my_capsule = None
+                    if hasattr(agent.capsule_registry, "capsules"):
+                        for c in agent.capsule_registry.capsules:
+                            if isinstance(c, dict) and c.get("agent_id") == agent.agent_id:
+                                my_capsule = c
+                                break
+                    for candidate_id in candidate_agents:
+                        candidate_capsule = None
+                        for a in agents:
+                            if a.agent_id == candidate_id and hasattr(a.capsule_registry, "capsules"):
+                                for c in a.capsule_registry.capsules:
+                                    if isinstance(c, dict) and c.get("agent_id") == candidate_id:
+                                        candidate_capsule = c
+                                        break
+                            if candidate_capsule:
+                                break
+                        # Check compatibility: goals overlap or tags intersect
+                        compatible = True
+                        if my_capsule and candidate_capsule:
+                            my_goal = my_capsule.get("goal", "")
+                            candidate_goal = candidate_capsule.get("goal", "")
+                            if my_goal and candidate_goal and my_goal not in candidate_goal and candidate_goal not in my_goal:
+                                compatible = False
+                            my_tags = set(my_capsule.get("tags", []))
+                            candidate_tags = set(
+                                candidate_capsule.get("tags", []))
+                            if not my_tags.intersection(candidate_tags):
+                                compatible = False
+                        if compatible:
+                            filtered_candidates.append(candidate_id)
+                    candidate_agents = filtered_candidates
+
                 proposal = coalition_manager.propose_coalition(
                     agent.agent_id, candidate_agents)
                 if proposal:
