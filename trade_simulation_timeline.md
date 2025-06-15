@@ -1,0 +1,17 @@
+# Trade Simulation Timeline
+
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3920> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3800>: Rare Digital Painting = rejected (score: 0.00)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3770> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3920>: Virtual Land Plot = rejected (score: 0.00)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3770> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3800>: Virtual Land Plot = accepted (score: 0.17)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3770> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3800>: Trade Agreement Contract = rejected (score: 0.00)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3800> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3920>: Digital Music Album = rejected (score: 0.00)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE39B0> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3920>: Digital Music Album = rejected (score: 0.00)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3770> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3890>: Exclusive Avatar Skin = rejected (score: 0.00)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3920> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3770>: Exclusive Avatar Skin = rejected (score: 0.00)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE39B0> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3890>: Trade Agreement Contract = rejected (score: 0.00)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3920> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3890>: Rare Digital Painting = rejected (score: 0.00)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3800> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE39B0>: Rare Digital Painting = accepted (score: 0.17)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3770> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE39B0>: Virtual Land Plot = rejected (score: 0.00)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3800> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3890>: Exclusive Avatar Skin = rejected (score: 0.00)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE3890> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE39B0>: Digital Music Album = accepted (score: 0.17)
+<agents.agent.AgentIdentity object at 0x0000023DF3CE39B0> ➝ <agents.agent.AgentIdentity object at 0x0000023DF3CE3920>: Virtual Land Plot = rejected (score: 0.00)
