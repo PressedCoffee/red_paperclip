@@ -1,90 +1,143 @@
-# Red Paperclip - Multi-Agent Trading System
+# Red Paperclip - Autonomous AI Agent Trading Ecosystem
 
-A sophisticated multi-agent trading and negotiation system where autonomous AI agents trade their way up from a single paperclip NFT, exploring emergent value systems and strategic decision-making.
+[![🔥 x402 Payments Verified](https://img.shields.io/badge/x402-Payments_Verified-red?style=for-the-badge)](./receipts/)
+[![🧠 LLM Enabled](https://img.shields.io/badge/LLM-Powered_Reasoning-blue?style=for-the-badge)](#)
+[![⚡ Live Demo](https://img.shields.io/badge/Demo-Ready-green?style=for-the-badge)](#quick-start)
+
+A sophisticated autonomous AI agent ecosystem where agents trade their way up from a single paperclip NFT, featuring **real x402 micropayments**, **LLM-powered reasoning**, and **archetype-driven behavior**.
 
 ## 🚀 Quick Start
 
-1. **Clone and Setup**:
-
 ```bash
-git clone https://github.com/PressedCoffee/red_paperclip.git
-cd red_paperclip
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install numpy pandas matplotlib pytest
+# Run complete hackathon demonstration
+python run_hackathon_demo.py --agents 5 --steps 20 --enable_verbal_exchange True
+
+# View live dashboard with metrics
+python dashboards/hackathon_dashboard.py
 ```
 
-2. **Run the Demo**:
+**Requirements**: Python 3.9+, OpenAI API key, Coinbase CDP credentials
 
-```bash
-python run_hackathon_demo.py
+## 🎯 How It Works
+
+• **Genesis Capsule**: Each agent starts with unique goals, values, and archetype-driven behavior  
+• **Verbal Persuasion Layer**: LLM-powered pitches influence trade negotiations  
+• **Archetype-driven Appraisal**: Visionary vs Investor agents value items differently  
+• **NFT Trade Chain + Ownership**: Faithful provenance tracking with ERC-1155/Redeemable contracts  
+• **x402 Live Payments**: Real micropayments on Base-Sepolia for premium features
+
+## 🏆 Architecture
+
+```mermaid
+graph TB
+    A[Agent Genesis Capsule] --> B[Appraisal Engine]
+    B --> C[Archetype Logic]
+    C --> D[UGTT Strategy]
+    D --> E[Verbal Exchange]
+    E --> F[Negotiation Module]
+    F --> G[x402 Payment]
+    G --> H[NFT Minting]
+    H --> I[Ownership Chain]
+
+    J[Reality Query] --> B
+    K[Goal Reevaluation] --> A
+    L[Memory System] --> F
 ```
 
-3. **View X402 Payment Results**:
+## 📊 Hackathon Submission Checklist
 
-```bash
-python show_x402_demo.py
-```
+### For Judges - Verification Steps:
+
+✅ **Payment Receipts**: Check `receipts/` directory for x402 transaction records  
+✅ **Provenance Chain**: Review NFT ownership history in simulation logs  
+✅ **Live Agent Mutation**: Observe agents changing archetypes during runtime  
+✅ **Dashboard Visual**: Confirm metrics and real-time data in Streamlit dashboard
+
+### Key Evidence Files:
+
+- 📎 `receipts/payment_*.json` - x402 payment confirmations
+- 📂 `simulation_logs/demo_session_*.json` - Complete audit trails
+- 📈 `dashboards/hackathon_dashboard.py` - Live metrics visualization
+- 🧬 Agent self-modification logs with archetype mutations
 
 ## 🎯 Key Features
 
 ![x402 Protocol](https://img.shields.io/badge/x402-autonomous_micropayments-green)
 ![Base Sepolia](https://img.shields.io/badge/Base-Sepolia_Testnet-blue)
 ![EIP-712](https://img.shields.io/badge/EIP--712-Signatures-orange)
+![LLM Powered](https://img.shields.io/badge/OpenAI-LLM_Reasoning-purple)
 
 ### ⚡ x402 Micropayments
 
-- **x402 protocol implemented for autonomous AI micro-payments on base-sepolia testnet**
+- **x402 protocol implemented for autonomous AI micro-payments on Base-Sepolia testnet**
 - **100% autonomous payment flow with EIP-712 signatures**
-- **Wallet signing via Coinbase AgentKit**
-- **Payments unlock premium resources in simulation**
-- **All receipts logged with correlation IDs**
+- **Wallet signing via Coinbase AgentKit integration**
+- **Payments unlock premium resources and verbal exchange features**
+- **All receipts logged with correlation IDs for full auditability**
 
-### Multi-Agent System
+### 🧠 Cognitive Autonomy
 
-- **Autonomous Agents**: Each agent has memory, goals, and strategic decision-making capabilities
-- **Coalition Formation**: Agents can form alliances and negotiate group trades
-- **Meta-Reasoning**: Advanced cognitive autonomy with self-modification capabilities
+- **Archetype-Driven Behavior**: Visionary, Investor, and Default agent personalities
+- **LLM-Powered Reasoning**: OpenAI integration for sophisticated decision-making
+- **Self-Modification Requests**: Agents can change their own goals and archetypes
+- **Meta-Reasoning Engine**: Advanced introspection and strategy adaptation
 
-### Game Theory Integration
+### 🎮 Game Theory & Strategy
 
 - **Universal Game Theory Toolkit (UGTT)**: Nash equilibrium computation and strategy analysis
-- **Payoff Matrix Construction**: Dynamic strategy evaluation and optimization
-- **Strategic Decision Making**: Agents use game theory for optimal trading decisions
+- **Dynamic Payoff Matrices**: Adaptive strategy evaluation based on agent interactions
+- **Coalition Formation**: Multi-agent alliances with profit-sharing mechanisms
 
-### Trading & Economics
+### 💬 Verbal Exchange Layer
 
-- **Simulated Exchange**: Full market simulation with order books and price discovery
-- **Dynamic Value Systems**: Agents develop their own definitions of value beyond monetary worth
-- **Blockchain Integration**: Wallet management and NFT trading capabilities
+- **LLM-Powered Pitches**: GPT-4 generates persuasive proposals tailored to target agents
+- **Cost-Aware Communication**: XP or USD-based pricing for premium verbal features
+- **Influence Mechanics**: Successful pitches increase trade acceptance probability
 
-### Advanced AI Features
+### 📈 Item Appraisal & NFT Trading
 
-- **Badge/XP System**: Gamified progression and achievement tracking
-- **Chaos Events**: Random market disruptions that test agent adaptability
-- **Real-time Visualization**: Interactive dashboards and social feeds
+- **Archetype-Driven Valuations**: Different agent types (Visionary/Investor) appraise items differently
+- **Comprehensive Cost Modeling**: Gas fees, x402 payments, pitch costs, coalition shares
+- **NFT Ownership Chain**: Faithful provenance tracking with ERC-1155/Redeemable contracts
+- **Trade Negotiations**: Multi-factor acceptance probability based on alignment and pitch quality
 
 ## 🏗️ Architecture
 
+### Core Components
+
 ```
 red_paperclip/
-├── agents/                     # Core agent system
-│   ├── agent.py               # Main agent implementation
-│   ├── badge_xp_system.py     # Achievement system
-│   └── wallet/                # Blockchain integration
-├── cognitive_autonomy_expansion_pack/  # Advanced AI
-│   ├── meta_reasoning_engine.py        # Meta-cognitive reasoning
-│   ├── ugtt_module.py                  # Game theory toolkit
-│   └── reality_query_interface.py     # External world interaction
-├── trading/                   # Market simulation
-├── simulations/              # Multi-agent scenarios
-└── ui/                      # Visualization components
+├── agents/                    # Agent system with archetype behavior
+├── cognitive_autonomy_expansion_pack/  # LLM reasoning & self-modification
+├── negotiation/              # Trade proposals & verbal exchange
+├── trading/                  # Market simulation & appraisal
+├── config/                   # Cost models & archetype definitions
+├── dashboards/               # Streamlit visualization
+├── simulation_logs/          # Complete audit trails
+└── receipts/                # x402 payment confirmations
 ```
 
-## 🧪 Running Tests
+### Integration Flow
+
+1. **Agent Genesis** → Capsule creation with archetype and goals
+2. **Item Appraisal** → LLM/hybrid valuation with cost estimation
+3. **Verbal Exchange** → Pitch generation with x402 payment deduction
+4. **Trade Negotiation** → Multi-factor acceptance probability
+5. **x402 Payment** → Autonomous micropayment via Coinbase AgentKit
+6. **NFT Minting** → Ownership transfer with provenance chain
+7. **Memory Logging** → Complete audit trail with correlation IDs
+
+## 🧪 Testing & Validation
 
 ```bash
-# Run all tests
+# Run core system tests
+python test_genesis_pad_core.py
+
+# Test item appraisal system
+python test_appraisal_simple.py
+
+# Run comprehensive demo
+python demo_genesis_pad.py
 python -m unittest discover -s tests -p "test_*.py" -v
 
 # Run specific modules

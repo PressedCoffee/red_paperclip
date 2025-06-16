@@ -30,12 +30,16 @@ class MetaCapsule(Capsule):
         public_snippet: Optional[str] = None,
         capsule_id: Optional[str] = None,
         agent_memory: Optional[AgentMemory] = None,
+        llm: Optional[object] = None,
+        live_mode: bool = False,
     ):
         super().__init__(goal, values, tags, wallet_address, public_snippet, capsule_id)
         self.value_biases = value_biases or [0.0 for _ in range(len(values))]
         self.goal_weights = goal_weights or [1.0 for _ in range(len(values))]
         self.curiosity_mode = curiosity_mode or "neutral"
         self.agent_memory = agent_memory
+        self.llm = llm
+        self.live_mode = live_mode
 
     def snapshot_parameters(self) -> dict:
         """
@@ -52,6 +56,10 @@ class MetaCapsule(Capsule):
         Mutate the driftable parameters to simulate memetic drift.
         :param stress_factor: Controls the magnitude of drift; higher means more change.
         """
+        if self.live_mode and self.llm is not None:
+            self._drift_parameters_live_mode()
+            return
+
         if not EXPERIMENTAL_FEATURES.get("chaos_pack", False):
             logging.debug("Chaos pack feature disabled; skipping drift.")
             return
@@ -153,3 +161,73 @@ class MetaCapsule(Capsule):
         except Exception as e:
             logging.error(f"Failed to generate diff report: {e}")
             return f"Error generating diff report: {e}"
+
+    def _drift_parameters_live_mode(self):
+        """
+        Use the LLM to generate dynamic output to mutate value weights or goal biases.
+        Logs all prompts and completions in agent_memory with timestamp and correlation ID.
+        """
+        import uuid
+        import datetime
+
+        if self.llm is None:
+            logging.warning("LLM client not set; cannot perform live drift.")
+            return
+
+        correlation_id = str(uuid.uuid4())
+        timestamp = datetime.datetime.utcnow().isoformat()
+
+        current_capsule = {
+            "goal": self.goal,
+            "values": self.values,
+            "value_biases": self.value_biases,
+            "goal_weights": self.goal_weights,
+            "curiosity_mode": self.curiosity_mode,
+        }
+
+        prompt = f"Suggest new motivation drift for: {json.dumps(current_capsule)}"
+
+        try:
+            completion = self.llm.invoke(prompt)
+        except Exception as e:
+            logging.error(f"LLM invocation failed: {e}")
+            return
+
+        # Log prompt and completion to agent_memory
+        if self.agent_memory is not None:
+            log_entry = {
+                "timestamp": timestamp,
+                "correlation_id": correlation_id,
+                "prompt": prompt,
+                "completion": completion,
+            }
+            try:
+                if hasattr(self.agent_memory, "log_llm_interaction"):
+                    self.agent_memory.log_llm_interaction(
+                        self.capsule_id, log_entry)
+                else:
+                    # Fallback: log as a trade record with a special tag
+                    from memory.agent_memory import TradeRecord
+                    record = TradeRecord(
+                        trade_item="llm_interaction",
+                        outcome=json.dumps(log_entry),
+                        symbolic_tag="llm_log",
+                        explanation="LLM prompt and completion log"
+                    )
+                    self.agent_memory.add_trade_record(self.capsule_id, record)
+                logging.info(
+                    f"Logged LLM interaction for capsule_id {self.capsule_id}")
+            except Exception as e:
+                logging.error(f"Failed to log LLM interaction: {e}")
+
+        # Parse completion to update value_biases and goal_weights if possible
+        try:
+            parsed = json.loads(completion)
+            if "value_biases" in parsed and isinstance(parsed["value_biases"], list):
+                self.value_biases = parsed["value_biases"]
+            if "goal_weights" in parsed and isinstance(parsed["goal_weights"], list):
+                self.goal_weights = parsed["goal_weights"]
+            if "curiosity_mode" in parsed and isinstance(parsed["curiosity_mode"], str):
+                self.curiosity_mode = parsed["curiosity_mode"]
+        except Exception as e:
+            logging.warning(f"Failed to parse LLM completion: {e}")

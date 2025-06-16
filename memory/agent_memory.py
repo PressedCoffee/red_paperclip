@@ -150,3 +150,33 @@ class AgentMemory:
             "frequency": 1,
             "effectiveness": effectiveness
         })
+
+    def store_llm_interaction(self, interaction):
+        """Store LLM interaction with timestamp and correlation ID for audit trail."""
+        if not hasattr(self, 'llm_interactions'):
+            self.llm_interactions = []
+
+        self.llm_interactions.append(interaction)
+
+        # Keep only the last 100 interactions to prevent memory bloat
+        if len(self.llm_interactions) > 100:
+            self.llm_interactions = self.llm_interactions[-100:]
+
+        return interaction
+
+    def log_event(self, event):
+        """Log a general event for tracking agent activities."""
+        if not hasattr(self, 'events'):
+            self.events = []
+
+        event_entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            **event
+        }
+        self.events.append(event_entry)
+
+        # Keep only the last 200 events
+        if len(self.events) > 200:
+            self.events = self.events[-200:]
+
+        return event_entry

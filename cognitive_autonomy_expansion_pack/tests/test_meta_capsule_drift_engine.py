@@ -22,6 +22,7 @@ class TestMetaCapsuleDriftEngine(unittest.TestCase):
             }
         ))
 
+        self.mock_llm = MagicMock()
         self.capsule = MetaCapsule(
             goal="Test Goal",
             values={"val1": 0.5, "val2": -0.5},
@@ -29,7 +30,9 @@ class TestMetaCapsuleDriftEngine(unittest.TestCase):
             value_biases=[0.0, 0.0],
             goal_weights=[1.0, 1.0],
             curiosity_mode="neutral",
-            agent_memory=self.mock_agent_memory
+            agent_memory=self.mock_agent_memory,
+            llm=self.mock_llm,
+            live_mode=False
         )
 
     def test_drift_parameters_mutates_values(self):
@@ -37,7 +40,6 @@ class TestMetaCapsuleDriftEngine(unittest.TestCase):
         self.capsule.drift_parameters(stress_factor=0.5)
         after = self.capsule.snapshot_parameters()
 
-        # Check that at least one value_bias or goal_weight changed or curiosity_mode changed
         changed = (
             before["value_biases"] != after["value_biases"] or
             before["goal_weights"] != after["goal_weights"] or
@@ -68,6 +70,24 @@ class TestMetaCapsuleDriftEngine(unittest.TestCase):
         )
         report = capsule_no_mem.capsule_diff_report()
         self.assertEqual(report, "No AgentMemory available.")
+
+    def test_drift_parameters_live_mode_invokes_llm_and_logs(self):
+        self.capsule.live_mode = True
+        self.capsule.llm = self.mock_llm
+        self.mock_llm.invoke.return_value = '{"value_biases": [0.1, 0.2], "goal_weights": [1.1, 1.2], "curiosity_mode": "exploratory"}'
+
+        self.capsule.drift_parameters()
+
+        self.mock_llm.invoke.assert_called_once()
+        self.mock_agent_memory.log_llm_interaction.assert_called_once()
+        log_call_args = self.mock_agent_memory.log_llm_interaction.call_args[0][1]
+        self.assertIn("prompt", log_call_args)
+        self.assertIn("completion", log_call_args)
+        self.assertIn("timestamp", log_call_args)
+        self.assertIn("correlation_id", log_call_args)
+        self.assertEqual(self.capsule.value_biases, [0.1, 0.2])
+        self.assertEqual(self.capsule.goal_weights, [1.1, 1.2])
+        self.assertEqual(self.capsule.curiosity_mode, "exploratory")
 
 
 if __name__ == "__main__":

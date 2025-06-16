@@ -1,34 +1,102 @@
 import numpy as np
+import time
+import uuid
 from typing import List, Dict, Any, Optional
 
 # Assuming badge_xp_system provides XP and badge trigger functions
-from agents.badge_xp_system import grant_xp, trigger_badge_unlock
+try:
+    from agents.badge_xp_system import grant_xp, trigger_badge_unlock
+except ImportError:
+    # Mock functions for standalone testing
+    def grant_xp(agent_id, amount, reason): pass
+    def trigger_badge_unlock(agent_id, badge_name): pass
 
 
 class CapsuleUGTT:
     """
-    Universal Game Theory Toolkit for strategic decision-making in multi-agent environments.
-    Implements game theory models such as Nash equilibrium, payoff matrix construction,
-    strategy evaluation, and equilibrium computation.
+    Enhanced Universal Game Theory Toolkit with live LLM integration.
+    Implements game theory models with LLM-assisted strategic analysis,
+    Nash equilibrium computation, payoff matrix construction,
+    and strategy evaluation with real-time cognitive insights.
     """
 
-    def __init__(self, agent_id: str, badge_hooks_enabled: bool = True):
-        self.agent_id = agent_id
+    def __init__(self, agent_id: str = None, badge_hooks_enabled: bool = True,
+                 llm=None, agent_memory=None, live_mode=False):
+        self.agent_id = agent_id or "default_agent"
         self.badge_hooks_enabled = badge_hooks_enabled
+        self.llm = llm
+        self.agent_memory = agent_memory
+        self.live_mode = live_mode
         self.last_strategy_executed = {}
         self.strategy_execution_log: List[Dict[str, Any]] = []
+        self.payoff_matrices = {}
 
-    def construct_payoff_matrix(self, strategies: List[str], payoffs: List[List[float]]) -> np.ndarray:
+    def construct_payoff_matrix(self, strategies: List[str] = None, payoffs: List[List[float]] = None) -> np.ndarray:
         """
-        Construct a payoff matrix from given strategies and payoffs.
-        :param strategies: List of strategy names.
-        :param payoffs: 2D list of payoffs corresponding to strategies.
-        :return: numpy ndarray representing the payoff matrix.
+        Construct a payoff matrix with optional LLM enhancement.
         """
+        correlation_id = str(uuid.uuid4())
+
+        # Handle None inputs
+        if strategies is None:
+            strategies = ["cooperate", "defect"]
+        if payoffs is None:
+            payoffs = [[3, 0], [5, 1]]  # Default prisoner's dilemma
+
+        if self.live_mode and self.llm:
+            # Use LLM to analyze and potentially adjust payoffs
+            payoffs_str = str(payoffs)
+            strategies_str = str(strategies)
+            prompt = f"""As a game theory expert, analyze these strategic interactions:
+
+Strategies: {strategies_str}
+Payoff Matrix: {payoffs_str}
+
+Consider:
+1. Strategic balance and fairness
+2. Nash equilibrium implications  
+3. Potential for cooperation vs competition
+4. Market dynamics
+
+Suggest any adjustments that would create more realistic strategic interactions.
+Return analysis and keep payoffs in the same numerical format."""
+
+            llm_analysis = self.llm.invoke(prompt)
+
+            # Log the LLM analysis
+            if self.agent_memory:
+                if hasattr(self.agent_memory, 'log_event'):
+                    self.agent_memory.log_event({
+                        "type": "ugtt_llm_analysis",
+                        "strategies": strategies,
+                        "original_payoffs": payoffs,
+                        "llm_analysis": llm_analysis,
+                        "timestamp": time.time(),
+                        "correlation_id": correlation_id
+                    })
+
+                if hasattr(self.agent_memory, 'store_llm_interaction'):
+                    self.agent_memory.store_llm_interaction({
+                        "timestamp": time.time(),
+                        "correlation_id": correlation_id,
+                        "prompt": prompt,
+                        "completion": llm_analysis
+                    })
+
+        # Convert to numpy array (keep original functionality)
         if not strategies or not payoffs:
-            return None
+            return np.array([[0]])
 
-        return np.array(payoffs)
+        matrix = np.array(payoffs)
+
+        # Store matrix for future reference
+        self.payoff_matrices[correlation_id] = {
+            "strategies": strategies,
+            "matrix": matrix,
+            "timestamp": time.time()
+        }
+
+        return matrix
 
     def evaluate_strategy(self, payoff_matrix: np.ndarray, strategy_index: int) -> float:
         """
@@ -54,9 +122,30 @@ class CapsuleUGTT:
         best_strategy = int(np.argmax(avg_payoffs))
         return [best_strategy]
 
-    def execute_strategy(self, strategy, payoff_matrix, player_index):
+    def execute_strategy(self, strategy, payoff_matrix, player_index, live_mode=False, correlation_id=None):
         """Execute a strategy and return the result with payoff."""
         try:
+            if live_mode and self.llm is not None and self.agent_memory is not None:
+                # Compose prompt for LLM to simulate strategic opponent behavior or adjust payoff matrix
+                prompt = (
+                    f"Agent {self.agent_id} executing strategy '{strategy}' with player index {player_index}.\n"
+                    f"Payoff matrix: {payoff_matrix}\n"
+                    "Simulate strategic opponent behaviors or adjust payoff matrix accordingly."
+                )
+                # Invoke LLM
+                completion = self.llm.invoke(prompt)
+                # Log prompt and completion with timestamp and correlation ID
+                import datetime
+                log_entry = {
+                    "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+                    "correlation_id": correlation_id,
+                    "prompt": prompt,
+                    "completion": completion
+                }
+                self.agent_memory.log(log_entry)
+                return completion
+
+            # Fallback to existing logic when live_mode is False or LLM not available
             # Handle numpy array payoff matrix
             if isinstance(payoff_matrix, np.ndarray):
                 # For numpy arrays, strategy should be an index or we need strategy names separately
@@ -186,3 +275,76 @@ class CapsuleUGTT:
             f"[compute_payoff] Agent {agent_id} computed payoff: {payoff:.3f}")
 
         return payoff
+
+    def execute_strategy(self, strategy_data, opponent_data=None):
+        """Execute strategy with LLM-enhanced decision making"""
+        correlation_id = str(uuid.uuid4())
+        timestamp = time.time()
+
+        if self.live_mode and self.llm and opponent_data:
+            # Use LLM for strategic analysis
+            prompt = f"""As a strategic game theory advisor, analyze this strategic situation:
+
+My Strategy: {strategy_data}
+Opponent Data: {opponent_data}
+
+Provide strategic recommendations:
+1. Optimal response to opponent's likely moves
+2. Risk assessment of current strategy
+3. Potential counter-strategies
+4. Cooperation vs competition recommendations
+
+Give tactical advice for this game theory scenario."""
+
+            strategic_advice = self.llm.invoke(prompt)
+
+            # Log LLM strategic analysis
+            if self.agent_memory:
+                if hasattr(self.agent_memory, 'log_event'):
+                    self.agent_memory.log_event({
+                        "type": "ugtt_strategic_analysis",
+                        "strategy_data": strategy_data,
+                        "opponent_data": opponent_data,
+                        "strategic_advice": strategic_advice,
+                        "timestamp": timestamp,
+                        "correlation_id": correlation_id
+                    })
+
+                if hasattr(self.agent_memory, 'store_llm_interaction'):
+                    self.agent_memory.store_llm_interaction({
+                        "timestamp": timestamp,
+                        "correlation_id": correlation_id,
+                        "prompt": prompt,
+                        "completion": strategic_advice
+                    })
+
+        # Execute the strategy (handle both numpy arrays and dicts)
+        if hasattr(strategy_data, 'shape'):  # numpy array
+            result = {"matrix_result": strategy_data.tolist(),
+                      "timestamp": timestamp}
+        else:  # dictionary or other format
+            result = {"strategy_result": strategy_data, "timestamp": timestamp}
+
+        # Log strategy execution
+        execution_record = {
+            "strategy": strategy_data,
+            "result": result,
+            "timestamp": timestamp,
+            "correlation_id": correlation_id,
+            "live_mode": self.live_mode
+        }
+
+        self.last_strategy_executed = execution_record
+        self.strategy_execution_log.append(execution_record)
+
+        if self.agent_memory and hasattr(self.agent_memory, 'log_event'):
+            self.agent_memory.log_event({
+                "type": "ugtt_strategy_execution",
+                **execution_record
+            })
+
+        # Grant XP for strategy execution
+        if self.badge_hooks_enabled:
+            grant_xp(self.agent_id, 5, "UGTT strategy execution")
+
+        return result

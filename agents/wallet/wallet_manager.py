@@ -47,8 +47,8 @@ class WalletManager:
         self._wallet_address: Optional[str] = None
         self._capsule_registry = capsule_registry
 
-        api_key_id = os.getenv("CDP_API_KEY_ID")
-        api_key_secret = os.getenv("CDP_API_KEY_SECRET")
+        api_key_id = os.getenv("CDP_API_KEY_NAME")
+        api_key_secret = os.getenv("CDP_API_KEY_PRIVATE")
 
         provider_config = CdpEvmServerWalletProviderConfig(
             api_key_id=api_key_id,

@@ -110,3 +110,29 @@ class CapsuleRegistry:
         :return: List of Capsule instances.
         """
         return list(self._capsules.values())
+
+    def add_capsule(self, capsule: Capsule):
+        """
+        Add a capsule to the registry.
+
+        :param capsule: The Capsule instance to add.
+        """
+        self._capsules[capsule.capsule_id] = capsule
+
+    def get_capsule(self, capsule_id: str) -> Optional[Capsule]:
+        """
+        Retrieve a capsule by its ID (alias for get_capsule_by_id).
+
+        :param capsule_id: The unique identifier of the capsule.
+        :return: Capsule instance if found, else None.
+        """
+        return self.get_capsule_by_id(capsule_id)
+
+    def update_capsule(self, capsule_id: str, capsule: Capsule):
+        """
+        Update a capsule in the registry.
+
+        :param capsule_id: The unique identifier of the capsule.
+        :param capsule: The updated Capsule instance.
+        """
+        self._capsules[capsule_id] = capsule

@@ -86,13 +86,19 @@ class GoalReevaluationModule:
             f"Tags updated from {old_tags} to {capsule.tags}, "
             f"Motivation score updated from {motivation_score} to {new_motivation_score}."
         )
+
         agent_id = capsule.capsule_id  # Using capsule_id as agent_id for memory logging
-        self.agent_memory.add_trade_record(
-            agent_id=agent_id,
+
+        # Create a proper TradeRecord object
+        from memory.agent_memory import TradeRecord
+        trade_record = TradeRecord(
             trade_item="Goal Reevaluation",
             outcome="updated",
-            capsule_data=capsule.to_dict(),
+            symbolic_tag="reevaluation",
+            explanation=f"Capsule {capsule.capsule_id} reevaluated: {reasoning}"
         )
+
+        self.agent_memory.add_trade_record(agent_id, trade_record)
 
         # Update the capsule in the registry
         self.capsule_registry._capsules[capsule.capsule_id] = capsule
