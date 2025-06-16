@@ -11,8 +11,7 @@ from ui.snapshot_panel import SnapshotPanel
 
 class CapsuleRealityQueryInterface:
     """
-    Abstracted interface for querying external knowledge using LLM-based structured hallucinations.
-    Supports live_mode and simulated_mode with shared LLM client.
+    Abstracted interface for querying external knowledge using LLM-based structured hallucinations.    Supports live_mode and simulated_mode with shared LLM client.
     Integrates with AgentMemory and trading logic.
     Logs query/response pairs to agent snapshot.
     """
@@ -20,8 +19,11 @@ class CapsuleRealityQueryInterface:
     def __init__(self, llm=None, agent_memory=None, trading_logic=None,
                  live_mode=False, snapshot_panel=None):
         self.llm = llm
-        self.agent_memory = agent_memory or (
-            AgentMemory() if AgentMemory else None)
+        # Ensure agent_memory is properly initialized
+        if agent_memory is None:
+            self.agent_memory = AgentMemory()
+        else:
+            self.agent_memory = agent_memory
         self.trading_logic = trading_logic
         self.live_mode = live_mode
         self.snapshot_panel = snapshot_panel
@@ -59,11 +61,12 @@ Format your response as factual analysis."""
             "query": query,
             "result": result,
             "timestamp": timestamp,
-            "correlation_id": correlation_id,
-            "live_mode": self.live_mode,
+            "correlation_id": correlation_id,            "live_mode": self.live_mode,
             "query_type": query_type
-        }        # Log to agent memory
-        if self.agent_memory:
+        }
+
+        # Log to agent memory
+        if self.agent_memory and hasattr(self.agent_memory, 'store_query_response'):
             self.agent_memory.store_query_response(query, response)
 
         # Store in local history
@@ -103,14 +106,13 @@ Format your response as factual analysis."""
         """
         log_entry = {
             "type": "llm_interaction",
-            "timestamp": datetime.datetime.utcnow().isoformat(),
-            "correlation_id": correlation_id,
+            "timestamp": datetime.datetime.utcnow().isoformat(),            "correlation_id": correlation_id,
             "prompt": f"Reality Query: {query}",
             "completion": str(response["result"]),
             "live_mode": self.live_mode
         }
 
-        if self.agent_memory:
+        if self.agent_memory and hasattr(self.agent_memory, 'store_llm_interaction'):
             self.agent_memory.store_llm_interaction(log_entry)
 
         self.query_log.append(log_entry)

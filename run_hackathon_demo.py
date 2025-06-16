@@ -90,19 +90,33 @@ def display_session_summary(session_log_path: str):
 
     try:
         with open(session_log_path, 'r') as f:
-            events = json.load(f)
+            session_data = json.load(f)
 
-        # Analyze events
-        trades = sum(1 for e in events if e.get('event_type') ==
-                     'trade_proposal' and e.get('details', {}).get('accepted', False))
+        # Extract all events from all steps
+        events = []
+        if isinstance(session_data, dict) and 'steps' in session_data:
+            for step in session_data['steps']:
+                if 'events' in step:
+                    events.extend(step['events'])
+        elif isinstance(session_data, list):
+            # Fallback for direct event list format
+            events = session_data        # Analyze events
+        trades = sum(1 for e in events if e.get('type') == 'trade_proposal'
+                     and e.get('details', {}).get('accepted', False))
         coalitions = sum(1 for e in events if e.get(
-            'event_type') == 'coalition_formation')
-        chaos_events = sum(1 for e in events if e.get(
-            'event_type') == 'chaos_event')
-        x402_payments = sum(1 for e in events if e.get(
-            'event_type') == 'x402_payment')
-        nft_mints = sum(1 for e in events if e.get(
-            'event_type') == 'nft_minting')
+            'type') == 'coalition_formation')
+        chaos_events = sum(1 for e in events if e.get('type') == 'chaos_event')
+        x402_payments = sum(
+            1 for e in events if e.get('type') == 'x402_payment')
+        nft_mints = sum(1 for e in events if e.get('type') == 'nft_minting')
+        meta_reasoning = sum(1 for e in events if e.get(
+            'type') == 'meta_reasoning')
+        reality_queries = sum(
+            1 for e in events if e.get('type') == 'reality_query')
+        strategy_executions = sum(
+            1 for e in events if e.get('type') == 'strategy_execution')
+        self_modifications = sum(
+            1 for e in events if e.get('type') == 'self_modification')
 
         print("\n" + "=" * 60)
         print("📊 HACKATHON DEMO RESULTS")
@@ -113,6 +127,10 @@ def display_session_summary(session_log_path: str):
         print(f"⚡ Chaos Events: {chaos_events}")
         print(f"💸 x402 Payments: {x402_payments}")
         print(f"🎨 NFTs Minted: {nft_mints}")
+        print(f"🧠 Meta Reasoning: {meta_reasoning}")
+        print(f"🌍 Reality Queries: {reality_queries}")
+        print(f"🎮 Strategy Executions: {strategy_executions}")
+        print(f"🔄 Self Modifications: {self_modifications}")
         print("=" * 60)
         print("🎯 NEXT STEPS:")
         print("1. View detailed metrics: python dashboards/hackathon_dashboard.py")

@@ -6,8 +6,7 @@ from typing import List, Dict, Any, Optional
 # Assuming badge_xp_system provides XP and badge trigger functions
 try:
     from agents.badge_xp_system import grant_xp, trigger_badge_unlock
-except ImportError:
-    # Mock functions for standalone testing
+except ImportError:    # Mock functions for standalone testing
     def grant_xp(agent_id, amount, reason): pass
     def trigger_badge_unlock(agent_id, badge_name): pass
 
@@ -268,15 +267,13 @@ Return analysis and keep payoffs in the same numerical format."""
         payoff = base_payoff + bias
 
         # Clamp payoff to a minimum of -1.0 to avoid extreme negative values
-        payoff = max(payoff, -1.0)
-
-        # Diagnostic logging of output
+        payoff = max(payoff, -1.0)        # Diagnostic logging of output
         print(
             f"[compute_payoff] Agent {agent_id} computed payoff: {payoff:.3f}")
 
         return payoff
 
-    def execute_strategy(self, strategy_data, opponent_data=None):
+    def execute_enhanced_strategy(self, strategy_data, opponent_data=None):
         """Execute strategy with LLM-enhanced decision making"""
         correlation_id = str(uuid.uuid4())
         timestamp = time.time()

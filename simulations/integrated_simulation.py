@@ -19,104 +19,115 @@ sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')))
 
 
-# === Setup ===
+def run_integrated_simulation(num_agents=1, num_steps=5, enable_verbal_exchange=True, enable_chaos_events=False, session_log_path=None):
+    """Run integrated simulation with multiple agents and cognitive autonomy features."""
+    # === Setup ===
 
-capsule_data = {
-    "agent_id": "agent_1",
-    "goal": "Maximize symbolic trade influence",
-    "values": ["autonomy", "curiosity", "collaboration"],
-    "tags": ["strategist"],
-}
-
-# Create AgentIdentity with required parameters
-agent_identity = AgentIdentity(agent_id="agent_1", capsule_id="capsule_1")
-agent = Agent(capsule_data=capsule_data, agent_identity=agent_identity)
-
-# Initialize required components
-agent_memory = AgentMemory()
-capsule_registry = CapsuleRegistry()
-goal_reevaluator = GoalReevaluationModule(capsule_registry, agent_memory)
-trade_evaluator = TradeEvaluator()
-
-# Initialize cognitive autonomy components
-meta_reasoner = GenesisMetaReasoner(agent_memory, goal_reevaluator)
-ugtt = CapsuleUGTT(agent.agent_identity.agent_id)
-reality_query = CapsuleRealityQueryInterface(agent_memory, trade_evaluator)
-
-# For self_modification, use the real lifecycle manager
-lifecycle_manager = AgentLifecycleManager(capsule_registry)
-agent_memory = AgentMemory()
-goal_module = GoalReevaluationModule(capsule_registry, agent_memory)
-self_mod = GenesisSelfModificationRequest(
-    capsule_registry=capsule_registry,
-    goal_module=goal_module,
-    agent_memory=agent_memory,
-    meta_reasoner=meta_reasoner,
-    lifecycle_manager=lifecycle_manager
-)
-
-# Prepare log container
-log_data = {
-    "agent_id": agent.agent_identity.agent_id,
-    "session_start": datetime.utcnow().isoformat(),
-    "steps": []
-}
-
-# === Simulation Loop ===
-
-for step in range(5):
-    step_entry = {
-        "step": step + 1,
-        "timestamp": datetime.utcnow().isoformat(),
-        "events": []
+    capsule_data = {
+        "agent_id": "agent_1",
+        "goal": "Maximize symbolic trade influence",
+        "values": ["autonomy", "curiosity", "collaboration"],
+        "tags": ["strategist"],
     }
 
-    # Meta-Reasoning
-    insights = meta_reasoner.analyze_reasoning_patterns()
-    print(f"[MetaReasoner] {insights}")
-    step_entry["events"].append(
-        {"type": "meta_reasoning", "details": insights})
+    # Create AgentIdentity with required parameters
+    agent_identity = AgentIdentity(agent_id="agent_1", capsule_id="capsule_1")
+    agent = Agent(capsule_data=capsule_data, agent_identity=agent_identity)
 
-    # Reality Query
-    reality_fact = reality_query.query_reality("latest symbolic trade trends")
-    print(f"[RealityQuery] {reality_fact}")
-    step_entry["events"].append(
-        {"type": "reality_query", "details": reality_fact})
+    # Initialize required components
+    agent_memory = AgentMemory()
+    capsule_registry = CapsuleRegistry()
+    goal_reevaluator = GoalReevaluationModule(capsule_registry, agent_memory)
+    trade_evaluator = TradeEvaluator()
 
-    # Game Theory Scenario - create a simple payoff matrix for demonstration
-    strategies = ["cooperate", "defect"]
-    payoffs = [[3, 0], [5, 1]]  # Prisoner's dilemma payoffs
-    payoff_matrix = ugtt.construct_payoff_matrix(strategies, payoffs)
-    strategy_result = ugtt.execute_strategy("cooperate", payoff_matrix, 0)
-    print(f"[UGTT] {strategy_result}")
-    step_entry["events"].append(
-        {"type": "ugtt_strategy", "details": strategy_result})
+    # Initialize cognitive autonomy components
+    meta_reasoner = GenesisMetaReasoner(agent_memory, goal_reevaluator)
+    ugtt = CapsuleUGTT(agent.agent_identity.agent_id)
+    reality_query = CapsuleRealityQueryInterface(
+        agent_memory=agent_memory,
+        trading_logic=trade_evaluator
+    )
 
-    # Self Modification (probabilistic)
-    if random.random() < 0.4:
-        mod_request = self_mod.create_request(
-            agent_id=agent.agent_identity.agent_id,
-            modification_details={"change": "Increase curiosity bias by 10%"},
-            requires_approval=False
-        )
-        print(f"[SelfModification] {mod_request}")
+    # For self_modification, use the real lifecycle manager
+    lifecycle_manager = AgentLifecycleManager(capsule_registry)
+    agent_memory = AgentMemory()
+    goal_module = GoalReevaluationModule(capsule_registry, agent_memory)
+    self_mod = GenesisSelfModificationRequest(
+        capsule_registry=capsule_registry,
+        goal_module=goal_module,
+        agent_memory=agent_memory,
+        meta_reasoner=meta_reasoner,
+        lifecycle_manager=lifecycle_manager
+    )
+
+    # Prepare log container
+    log_data = {
+        "agent_id": agent.agent_identity.agent_id,
+        "session_start": datetime.utcnow().isoformat(),
+        "steps": []
+    }
+
+    # === Simulation Loop ===
+
+    for step in range(5):
+        step_entry = {
+            "step": step + 1,
+            "timestamp": datetime.utcnow().isoformat(),
+            "events": []
+        }
+
+        # Meta-Reasoning
+        insights = meta_reasoner.analyze_reasoning_patterns()
+        print(f"[MetaReasoner] {insights}")
         step_entry["events"].append(
-            {"type": "self_modification", "details": mod_request})
+            {"type": "meta_reasoning", "details": insights})
 
-    # Append step entry to log
-    log_data["steps"].append(step_entry)
+        # Reality Query
+        reality_fact = reality_query.query_reality(
+            "latest symbolic trade trends")
+        print(f"[RealityQuery] {reality_fact}")
+        step_entry["events"].append(
+            {"type": "reality_query", "details": reality_fact})
 
-# Add session end timestamp
-log_data["session_end"] = datetime.utcnow().isoformat()
+        # Game Theory Scenario - create a simple payoff matrix for demonstration
+        strategies = ["cooperate", "defect"]
+        payoffs = [[3, 0], [5, 1]]  # Prisoner's dilemma payoffs
+        payoff_matrix = ugtt.construct_payoff_matrix(strategies, payoffs)
+        strategy_result = ugtt.execute_strategy("cooperate", payoff_matrix, 0)
+        print(f"[UGTT] {strategy_result}")
+        step_entry["events"].append(
+            {"type": "ugtt_strategy", "details": strategy_result})
 
-# === Save Log to JSON File ===
+        # Self Modification (probabilistic)
+        if random.random() < 0.4:
+            mod_request = self_mod.create_request(
+                agent_id=agent.agent_identity.agent_id,
+                modification_details={
+                    "change": "Increase curiosity bias by 10%"},
+                requires_approval=False
+            )
+            print(f"[SelfModification] {mod_request}")
+            step_entry["events"].append(
+                {"type": "self_modification", "details": mod_request})
 
-log_filename = f"simulation_logs/agent_{agent.agent_identity.agent_id}_session.json"
+        # Append step entry to log
+        log_data["steps"].append(step_entry)
 
-# Ensure the directory exists
-os.makedirs("simulation_logs", exist_ok=True)
+    # Add session end timestamp
+    # === Save Log to JSON File ===
+    log_data["session_end"] = datetime.utcnow().isoformat()
 
-with open(log_filename, "w") as f:
-    json.dump(log_data, f, indent=4)
+    if session_log_path:
+        log_filename = session_log_path
+    else:
+        log_filename = f"simulation_logs/agent_{agent.agent_identity.agent_id}_session.json"
 
-print(f"\n✅ Simulation complete — log saved to {log_filename}")
+    # Ensure the directory exists
+    os.makedirs("simulation_logs", exist_ok=True)
+
+    with open(log_filename, "w") as f:
+        json.dump(log_data, f, indent=4)
+
+    print(f"\n✅ Simulation complete — log saved to {log_filename}")
+
+    return log_filename
