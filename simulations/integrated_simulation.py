@@ -1,5 +1,5 @@
 import json
-import jsonpsule_registry import CapsuleRegistry
+from registry.capsule_registry import CapsuleRegistry
 import random
 from datetime import datetime
 from cognitive_autonomy_expansion_pack.meta_reasoning_engine import GenesisMetaReasoner
@@ -10,7 +10,6 @@ from agents.agent import Agent, AgentIdentity, AgentLifecycleManager
 from memory.agent_memory import AgentMemory
 from agents.goal_reevaluation_module import GoalReevaluationModule
 from trading.trading_logic import TradeEvaluator
-from registry.capsule_registry import CapsuleRegistry
 import sys
 import os
 sys.path.insert(0, os.path.abspath(
@@ -46,7 +45,15 @@ reality_query = CapsuleRealityQueryInterface(agent_memory, trade_evaluator)
 
 # For self_modification, use the real lifecycle manager
 lifecycle_manager = AgentLifecycleManager(capsule_registry)
-self_mod = GenesisSelfModificationRequest(meta_reasoner, lifecycle_manager)
+agent_memory = AgentMemory()
+goal_module = GoalReevaluationModule(capsule_registry, agent_memory)
+self_mod = GenesisSelfModificationRequest(
+    capsule_registry=capsule_registry,
+    goal_module=goal_module,
+    agent_memory=agent_memory,
+    meta_reasoner=meta_reasoner,
+    lifecycle_manager=lifecycle_manager
+)
 
 # Prepare log container
 log_data = {

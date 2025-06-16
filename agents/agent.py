@@ -7,7 +7,7 @@ import logging
 import requests
 from cognitive_autonomy_expansion_pack.shared_llm_client import get_shared_llm
 from cognitive_autonomy_expansion_pack.ugtt_module import CapsuleUGTT
-from cognitive_autonomy_expansion_pack.reality_query_interface import CapsuleRealityQueryInterface
+# Import CapsuleRealityQueryInterface lazily to avoid circular imports
 from config.trade_config import get_config, get_archetype_config, calculate_base_costs
 from visibility.visibility_preferences import VisibilityPreferences
 from registry.capsule_registry import Capsule
@@ -70,14 +70,14 @@ class Agent:
         """
         self.capsule_data = capsule_data
         self.agent_identity = agent_identity
-        self.badge_xp_system = badge_xp_system
-
         # Initialize WalletManager and X402PaymentHandler for payment handling
+        self.badge_xp_system = badge_xp_system
         # Pass None or actual registry if available
         self.wallet_manager = WalletManager(capsule_registry=None)
         self.x402_payment_handler = X402PaymentHandler(self.wallet_manager)
 
-        # Initialize cognitive modules for appraisal
+        # Initialize cognitive modules for appraisal (lazy import to avoid circular dependencies)
+        from cognitive_autonomy_expansion_pack.reality_query_interface import CapsuleRealityQueryInterface
         self.reality_query = CapsuleRealityQueryInterface()
         self.ugtt_module = CapsuleUGTT()
         self.config = get_config()

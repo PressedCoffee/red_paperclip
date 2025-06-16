@@ -21,7 +21,7 @@ def setup_environment():
     load_dotenv()
 
     required_vars = ['OPENAI_API_KEY',
-                     'CDP_API_KEY_NAME', 'CDP_API_KEY_PRIVATE']
+                     'CDP_API_KEY_ID', 'CDP_API_KEY_SECRET']
     missing_vars = [var for var in required_vars if not os.getenv(var)]
 
     if missing_vars:
